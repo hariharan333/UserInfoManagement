@@ -195,24 +195,34 @@ func GetAllUsers(context *gin.Context) {
 
 // Get the user data from user table based on user id
 func GetUser(context *gin.Context) {
-	var user models.User
+	var users []models.User
 
 	//Get the userid path param from the request url
 	reqParamId := context.Param("userid")
 	userid := cast.ToUint(reqParamId)
 
-	//Get the user data from user table based on user id
-	err := db.First(&user, userid)
+// 	//Get the user data from user table based on user id
+// 	err := db.First(&user, userid)
+// 	if err.Error != nil {
+// 		context.JSON(http.StatusBadRequest, gin.H{"status code": "500", "error": "Getting an error while getting a user data from the user table based on id"})
+// 		return
+// 	}
+	//Get the all users data from the user table
+	err := db.Find(&users)
 	if err.Error != nil {
-		context.JSON(http.StatusBadRequest, gin.H{"status code": "500", "error": "Getting an error while getting a user data from the user table based on id"})
+		context.JSON(http.StatusBadRequest, gin.H{"status code": "500", "error": "Getting an error while getting all users data from the user table"})
 		return
 	}
-
+	if len(users) < int(userid) {
+		context.JSON(http.StatusBadRequest, gin.H{"status code": "400", "error": "Invalid pagination number. please enter the valid pagination."})
+		return
+	}
+	
 	//Return success response
 	context.JSON(http.StatusOK, gin.H{
 		"status code": "200",
 		"message":     "Successfully get the user data",
-		"data":        user,
+		"data":        users[userid-1],
 	})
 
 }
